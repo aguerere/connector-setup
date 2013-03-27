@@ -1,6 +1,6 @@
 require('colors');
 
-var auth0Url = process.env.NODE_ENV === 'production' ? 'https://login.auth0.com' : 'https://localhost:3000';
+var auth0Url = 'https://login.auth0.com';
 
 var program = require('commander');
 var async = require('async');
