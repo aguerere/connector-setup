@@ -8,7 +8,8 @@ module.exports = function (info, cb) {
   config["SESSION_SECRET"] = "a1b2c3d4567",
   config["WSFED_ISSUER"] = info.connectionDomain;
   config["SITE_NAME"] = info.connectionDomain;
-  config["REALM-" + info.realm.name] = info.realm.postTokenUrl;
+  config["REALMS"] = {};
+  config['REALMS'][info.realm.name] = info.realm.postTokenUrl;
 
   fs.writeFileSync(path.join(process.cwd(), '/config.json'), JSON.stringify(config, null, 4));
 
