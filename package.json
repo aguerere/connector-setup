@@ -2,7 +2,6 @@
   "name": "connector-setup",
   "version": "0.0.1",
   "description": "Auth0 Connector setup wizard.",
-  "bin": "bin/connector-setup",
   "main": "index.js",
   "repository": {
     "type": "git",
