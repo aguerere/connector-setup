@@ -1,7 +1,5 @@
 require('colors');
 
-var auth0Url = 'https://login-dev.auth0.com:3000';
-
 var program = require('commander');
 var async = require('async');
 var request = require('request');
@@ -37,7 +35,7 @@ exports.run = function (workingPath, callback) {
     },
     function (cb) {
       request.get({
-        url: urlJoin(auth0Url, '/p/', provisioningTicket, '/info')
+        url: urlJoin(provisioningTicket, '/info')
       }, function (err, response, body) {
         if (err) return cb(err);
         if (response.statusCode == 404) return cb (new Error('wrong ticket'));
@@ -62,7 +60,7 @@ exports.run = function (workingPath, callback) {
     function (cb) {
       configureConnection(program, workingPath, 
                           info, currentConfig, 
-                          provisioningTicket, auth0Url, cb);
+                          provisioningTicket, cb);
     },
     function (cb) {
       saveConfig(workingPath, currentConfig, cb); 
