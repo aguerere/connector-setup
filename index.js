@@ -1,31 +1,39 @@
 require('colors');
 
-var auth0Url = 'https://login.auth0.com';
+var auth0Url = 'https://login-dev.auth0.com:3000';
 
 var program = require('commander');
 var async = require('async');
 var request = require('request');
 var urlJoin = require('url-join');
+var path = require('path');
 
 //steps
 var certificate = require('./steps/certificate');
 var configureConnection = require('./steps/configureConnection');
-var configFile = require('./steps/configFile');
+var saveConfig = require('./steps/saveConfig');
 
 program
   .version(require('./package.json').version)
   .parse(process.argv);
 
 //iJF1dvIa
+exports.run = function (workingPath, callback) {
+  var provisioningTicket, info; 
+  var currentConfig = {};
 
-var provisioningTicket, info;
-
-async.series([
+  async.series([
     function (cb) {
-      program.prompt('Please enter the ticket number: ', function (pt) {
-        provisioningTicket = pt;
-        cb();
-      });
+      try {
+        currentConfig = require(path.join(workingPath, 'config.json'));
+        provisioningTicket = currentConfig.PROVISIONING_TICKET;
+        return cb();
+      } catch(err) {
+        program.prompt('Please enter the ticket number: ', function (pt) {
+          provisioningTicket = pt;
+          cb();
+        });
+      }
     },
     function (cb) {
       request.get({
@@ -38,24 +46,29 @@ async.series([
       });
     },
     function (cb) {
-      console.log('\nWe will guide you to a series of steps to configure an authentication provider linked to ' + info.appName.blue);
-      console.log('');
-      cb();
+
+      currentConfig['PROVISIONING_TICKET'] = provisioningTicket;
+      currentConfig['SESSION_SECRET'] = 'a1b2c3d4567',
+      currentConfig['WSFED_ISSUER'] = info.connectionDomain;
+      currentConfig['SITE_NAME'] = info.connectionDomain;
+      currentConfig['REALMS'] = {};
+      currentConfig['REALMS'][info.realm.name] = info.realm.postTokenUrl;
+
+      saveConfig(workingPath, currentConfig, cb); 
     },
     function (cb) {
-      certificate(program, info, cb);
+      certificate(workingPath, info, cb);
     },
     function (cb) {
-      configureConnection(program, provisioningTicket, auth0Url, cb);
+      configureConnection(program, workingPath, 
+                          info, currentConfig, 
+                          provisioningTicket, auth0Url, cb);
     },
     function (cb) {
-      configFile(info, cb);
+      saveConfig(workingPath, currentConfig, cb); 
     }
   ], function (err) {
-    if (err) { 
-      console.log(err.message.red);
-      return process.exit(2);
-    }
-    console.log('Done!'.green);
-    process.exit(0);
+    if (err) return callback(err);
+    callback(null, currentConfig);
   });
+};

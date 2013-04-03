@@ -2,21 +2,20 @@ var selfsigned = require('selfsigned');
 var fs = require('fs');
 var path = require('path');
 
-module.exports = function (program, info, cb) {
-  console.log('The authentication provider needs a valid x509 certificate.');
-  program.confirm('Do you want to autogenerate a certificate? ', function (createSelfSigned) {
-    if (createSelfSigned) {
-      selfsigned.generate({subj: '/CN=' + info.connectionDomain }, function (err, selfSigned) {
-        if (err) return cb(err);
-        fs.writeFileSync(path.join(process.cwd(), 'certs', 'cert.key'), selfSigned.privateKey);
-        fs.writeFileSync(path.join(process.cwd(), 'certs', 'cert.pem'), selfSigned.publicKey);
-        console.log('Certificate generated.\n'.green);
-        cb();
-      });
-    } else {
-      console.log('answer is no');
-      console.log('Copy your public and private key to the certs folder replacing ' + 'cert.key'.grey + ' and ' + 'cert.pem'.grey);
-      program.prompt('Press enter to continue: ', function(){ cb(); });
-    }
+var fileNames = {
+  pem: path.join(process.cwd(), 'certs', 'cert.pem'),
+  key: path.join(process.cwd(), 'certs', 'cert.key')
+};
+
+module.exports = function (workingPath, info, cb) {
+  if (fs.existsSync(fileNames.key)) return cb();
+
+  console.log('Generating a self-signed certificate.'.yellow);
+  selfsigned.generate({subj: '/CN=' + info.connectionDomain }, function (err, selfSigned) {
+    if (err) return cb(err);
+    fs.writeFileSync(fileNames.pem, selfSigned.publicKey);
+    fs.writeFileSync(fileNames.key, selfSigned.privateKey);
+    console.log('Certificate generated.\n'.green);
+    cb();
   });
 };
