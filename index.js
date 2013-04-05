@@ -11,8 +11,6 @@ var urlJoin = require('url-join');
 var certificate = require('./steps/certificate');
 var configureConnection = require('./steps/configureConnection');
 
-var envConfig = require('./envConfig');
-
 program
   .version(require('./package.json').version)
   .parse(process.argv);
@@ -66,8 +64,7 @@ exports.run = function (workingPath, extraEmptyVars, callback) {
     },
     function (cb) {
       nconf.save(cb);
-    },
-    envConfig.storeInEnv
+    }
   ], function (err) {
     if (err) return callback(err);
     callback(null, currentConfig);
