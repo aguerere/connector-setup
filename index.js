@@ -67,6 +67,6 @@ exports.run = function (workingPath, extraEmptyVars, callback) {
     }
   ], function (err) {
     if (err) return callback(err);
-    callback(null, currentConfig);
+    callback();
   });
 };
