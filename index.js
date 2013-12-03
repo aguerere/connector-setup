@@ -16,8 +16,8 @@ program
   .parse(process.argv);
 
 exports.run = function (workingPath, extraEmptyVars, callback) {
-  var provisioningTicket, info; 
-  
+  var provisioningTicket, info;
+
   if (typeof extraEmptyVars === 'function') {
     callback = extraEmptyVars;
     extraEmptyVars = [];
@@ -45,6 +45,7 @@ exports.run = function (workingPath, extraEmptyVars, callback) {
       });
     },
     function (cb) {
+      nconf.set('AD_HUB', info.adHub);
       nconf.set('PROVISIONING_TICKET', provisioningTicket);
       nconf.set('WSFED_ISSUER', info.connectionDomain);
       nconf.set('CONNECTION', info.connectionName);
